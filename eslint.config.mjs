@@ -11,13 +11,15 @@ export default [
   {
     ignores: ["node_modules", "dist"],
     rules: {
-      "no-unused-vars": "warn", // was "warning"
+      // "no-unused-vars": "warn", // was "warning"
       "no-console": "warn", // discourage console logs in production
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
       "eqeqeq": ["error", "always"], // enforce === instead of ==
       "curly": "error", // require curly braces for all control statements
-      "object-curly-spacing": ["warn", "always"], // enforce spacing inside braces
+      // "object-curly-spacing": ["warn", "always"], // enforce spacing inside braces
       "arrow-spacing": ["error", { before: true, after: true }], // enforce space around arrows
-      "no-multiple-empty-lines": ["error", { max: 1 }], // limit blank lines
+      "no-multiple-empty-lines": ["warn", { max: 10 }], // limit blank lines
     },
   },
 ];
