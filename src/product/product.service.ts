@@ -30,9 +30,9 @@ const addProduct = async (productData: IProduct) => {
 const getProductById = async (id: string) => {
   try {
     // Use Mongoose's `.findOne` method to find product by ID
-    const product = await Product.findOne({ 
+    const product = await Product.findOne({
       _id: new ObjectId(id),
-      isDeleted: { $ne: true }
+      isDeleted: { $ne: true },
     });
 
     if (product) {
@@ -41,7 +41,7 @@ const getProductById = async (id: string) => {
         await product.save();
       }
     }
-    
+
     return product;
   } catch (err) {
     console.error("Service Error (getProductById):", err);
@@ -49,14 +49,10 @@ const getProductById = async (id: string) => {
   }
 };
 
-
 const deleteProductById = async (id: string): Promise<boolean> => {
   try {
     // Use Mongoose's `.updateOne` to set `isDeleted` flag
-    const result = await Product.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { isDeleted: true } }
-    );
+    const result = await Product.updateOne({ _id: new ObjectId(id) }, { $set: { isDeleted: true } });
     return result.modifiedCount === 1;
   } catch (err) {
     console.error("Service Error (deleteProductById):", err);
@@ -64,17 +60,12 @@ const deleteProductById = async (id: string): Promise<boolean> => {
   }
 };
 
-
 const deleteProductsMultiple = async (id: string[]) => {
   try {
     const objectId = id.map((id) => new ObjectId(id));
     const db = await connectToDatabase();
-    
-    const result = db.collection("products").updateMany(
-      { _id: { $in: objectId } },
-      { $set: { isDeleted: true } }
-    );
 
+    const result = db.collection("products").updateMany({ _id: { $in: objectId } }, { $set: { isDeleted: true } });
 
     return result;
   } catch (err) {
@@ -82,7 +73,6 @@ const deleteProductsMultiple = async (id: string[]) => {
     throw err;
   }
 };
-
 
 // const updateProductById = async (id: string, updateData: Record<string, unknown>) => {
 //   try {
@@ -99,12 +89,10 @@ const deleteProductsMultiple = async (id: string[]) => {
 //   }
 // };
 
-
-
 const updateProductById = async (id: string, updateData: Record<string, unknown>) => {
   try {
     const db = await connectToDatabase();
-    
+
     const product = await db.collection("products").findOne({ _id: new ObjectId(id) });
 
     if (!product) {
@@ -124,16 +112,13 @@ const updateProductById = async (id: string, updateData: Record<string, unknown>
       return { success: false, message: "No changes detected.", id };
     }
 
-    const result = await db.collection("products").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
+    const result = await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: updateData });
 
     return {
       success: result.modifiedCount > 0,
       message: result.modifiedCount > 0 ? "Product updated successfully" : "No document was modified",
       id,
-      modifiedCount: result.modifiedCount
+      modifiedCount: result.modifiedCount,
     };
   } catch (err) {
     console.error("Service Error (updateProductById):", err);
@@ -141,21 +126,11 @@ const updateProductById = async (id: string, updateData: Record<string, unknown>
   }
 };
 
-
-
-
-
-
-
-
-
-
-
 export const productService = {
   getAllProducts,
   addProduct,
   getProductById,
   deleteProductById,
   deleteProductsMultiple,
-  updateProductById
+  updateProductById,
 };

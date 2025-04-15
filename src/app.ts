@@ -1,20 +1,16 @@
-import express from "express"
-import { productRoutes } from "./product/product.route"
+import express from "express";
+import { productRoutes } from "./product/product.route";
 
-const app = express()
-const port = 3000
+const app = express();
+const port = 3000;
 
-app.use(express.json())
-app.use("/product", productRoutes)
-
-
+app.use(express.json());
+app.use("/product", productRoutes);
 
 app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 
-
-
-app.get('/', async (req, res) => {
-  res.send('Hello from goriber bicycle shop.')
-})
+app.get("/", async (req, res) => {
+  res.send("Hello from goriber bicycle shop.");
+});

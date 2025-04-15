@@ -15,8 +15,8 @@ export default [
       "no-console": "warn", // discourage console logs in production
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "warn",
-      "eqeqeq": ["error", "always"], // enforce === instead of ==
-      "curly": "error", // require curly braces for all control statements
+      eqeqeq: ["error", "always"], // enforce === instead of ==
+      curly: "error", // require curly braces for all control statements
       // "object-curly-spacing": ["warn", "always"], // enforce spacing inside braces
       "arrow-spacing": ["error", { before: true, after: true }], // enforce space around arrows
       "no-multiple-empty-lines": ["warn", { max: 10 }], // limit blank lines

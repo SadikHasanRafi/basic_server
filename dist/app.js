@@ -21,6 +21,6 @@ app.use("/product", product_route_1.productRoutes);
 app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`Example app listening on port ${port}`);
 }));
-app.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.send('Hello from goriber bicycle shop.');
+app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.send("Hello from goriber bicycle shop.");
 }));
