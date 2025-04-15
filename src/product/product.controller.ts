@@ -1,20 +1,35 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { productService } from "./product.service";
 import { productSchema } from "./product.validator";
 import { ObjectId } from "mongodb";
 
 const getAllProduct: RequestHandler = async (req, res, next) => {
   try {
-    const products = await productService.getAllProducts({ isDeleted: false });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    const { products, total } = await productService.getAllProducts(
+      { isDeleted: false },
+      page,
+      limit
+    );
+
     res.status(200).json({
       success: true,
       data: products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     console.error("Controller Error:", error);
     next(error);
   }
 };
+
 
 const addProduct: RequestHandler = async (req, res, next) => {
   const parsed = productSchema.safeParse(req.body);

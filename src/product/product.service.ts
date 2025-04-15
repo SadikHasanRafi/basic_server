@@ -1,15 +1,29 @@
 import { ObjectId } from "mongodb";
-import { Product } from "./product.model.js";
 import { IProduct } from "./product.interface.js";
-import { connectToDatabase } from "../util/DatabaseConnection.js";
+import { connectToDatabase } from "../util/databaseConnection.js";
 
-const getAllProducts = async (filter = {}) => {
+const getAllProducts = async (
+  filter = {},
+  page: number = 1,
+  limit: number = 2
+) => {
   try {
-    // Construct the final filter with default isDeleted check
+    const skip = (page - 1) * limit;
     const finalFilter = { isDeleted: { $ne: true }, ...filter };
-    // Use Mongoose's `.find` method
-    const products = await Product.find(finalFilter);
-    return products;
+    // Debugging the final filter and pagination values
+    // console.log("Final Filter:", finalFilter);
+    // console.log("Skip:", skip);
+    // console.log("Limit:", limit);
+    const db = await connectToDatabase();
+    const products = await db.collection("products")
+      .find(finalFilter)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+      
+    const total = await db.collection("products").countDocuments(finalFilter);
+
+    return { products, total };
   } catch (error) {
     console.error("Service Error (getAllProducts):", error);
     throw error;
@@ -18,9 +32,9 @@ const getAllProducts = async (filter = {}) => {
 
 const addProduct = async (productData: IProduct) => {
   try {
-    // Use Mongoose's `.create` method to add the product
-    const product = await Product.create(productData);
-    return product;
+    const db = await connectToDatabase();
+    const result = await db.collection("products").insertOne(productData);
+    return result;
   } catch (err) {
     console.error("Service Error (addProduct):", err);
     throw err;
@@ -29,8 +43,8 @@ const addProduct = async (productData: IProduct) => {
 
 const getProductById = async (id: string) => {
   try {
-    // Use Mongoose's `.findOne` method to find product by ID
-    const product = await Product.findOne({
+    const db = await connectToDatabase();
+    const product = await db.collection("products").findOne({
       _id: new ObjectId(id),
       isDeleted: { $ne: true },
     });
@@ -38,7 +52,7 @@ const getProductById = async (id: string) => {
     if (product) {
       if (product.quantity === 0) {
         product.stock = false;
-        await product.save();
+        await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: { stock: false } });
       }
     }
 
@@ -51,8 +65,11 @@ const getProductById = async (id: string) => {
 
 const deleteProductById = async (id: string): Promise<boolean> => {
   try {
-    // Use Mongoose's `.updateOne` to set `isDeleted` flag
-    const result = await Product.updateOne({ _id: new ObjectId(id) }, { $set: { isDeleted: true } });
+    const db = await connectToDatabase();
+    const result = await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isDeleted: true } }
+    );
     return result.modifiedCount === 1;
   } catch (err) {
     console.error("Service Error (deleteProductById):", err);
@@ -60,13 +77,15 @@ const deleteProductById = async (id: string): Promise<boolean> => {
   }
 };
 
-const deleteProductsMultiple = async (id: string[]) => {
+// Delete multiple products by IDs (soft delete)
+const deleteProductsMultiple = async (ids: string[]) => {
   try {
-    const objectId = id.map((id) => new ObjectId(id));
+    const objectIdArray = ids.map((id) => new ObjectId(id));
     const db = await connectToDatabase();
-
-    const result = db.collection("products").updateMany({ _id: { $in: objectId } }, { $set: { isDeleted: true } });
-
+    const result = await db.collection("products").updateMany(
+      { _id: { $in: objectIdArray } },
+      { $set: { isDeleted: true } }
+    );
     return result;
   } catch (err) {
     console.error("Service Error (deleteProductsMultiple):", err);
@@ -74,25 +93,10 @@ const deleteProductsMultiple = async (id: string[]) => {
   }
 };
 
-// const updateProductById = async (id: string, updateData: Record<string, unknown>) => {
-//   try {
-//     const db = await connectToDatabase();
-//     const result = await db.collection("products").updateOne(
-//       { _id: new ObjectId(id) },
-//       { $set: updateData }
-//     );
-
-//     return result;
-//   } catch (err) {
-//     console.error("Service Error (updateProductById):", err);
-//     throw err;
-//   }
-// };
-
+// Update product by ID
 const updateProductById = async (id: string, updateData: Record<string, unknown>) => {
   try {
     const db = await connectToDatabase();
-
     const product = await db.collection("products").findOne({ _id: new ObjectId(id) });
 
     if (!product) {
@@ -103,16 +107,16 @@ const updateProductById = async (id: string, updateData: Record<string, unknown>
       return { success: false, message: "Nothing to update.", id };
     }
 
-    // Check if all updateData fields match the existing product
-    const hasChanges = Object.entries(updateData).some(([key, value]) => {
-      return product[key] !== value;
-    });
+    const hasChanges = Object.entries(updateData).some(([key, value]) => product[key] !== value);
 
     if (!hasChanges) {
       return { success: false, message: "No changes detected.", id };
     }
 
-    const result = await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const result = await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
 
     return {
       success: result.modifiedCount > 0,

@@ -14,11 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const product_route_1 = require("./product/product.route");
+const user_route_1 = require("./userAuth/user.route");
+const databaseConnection_1 = require("./util/databaseConnection");
 const app = (0, express_1.default)();
 const port = 3000;
 app.use(express_1.default.json());
 app.use("/product", product_route_1.productRoutes);
+app.use("/user", user_route_1.userRoutes);
 app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, databaseConnection_1.connectToDatabase)();
     console.log(`Example app listening on port ${port}`);
 }));
 app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
