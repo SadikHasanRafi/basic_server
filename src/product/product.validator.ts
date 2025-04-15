@@ -11,7 +11,7 @@ export const productSchema = z.object({
   brand: z.string().trim().min(1, "Brand is required"),
   model: z.string().trim().min(1, "Model is required"),
   price: z.number().min(0, "Price cannot be negative"),
-  stock: z.boolean().optional(),
+  stock: z.boolean().default(true),
   image: z
     .string()
     .url("Image must be a valid URL")
@@ -19,7 +19,7 @@ export const productSchema = z.object({
     .optional(),
   quantity: z.number().min(0, "Quantity cannot be negative").default(1),
   about: z.string().max(500, "About section too long").optional(),
+  isDeleted: z.boolean().default(false), 
 });
-
 
 export type ProductType = z.infer<typeof productSchema>;
